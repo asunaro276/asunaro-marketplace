@@ -11,11 +11,11 @@
       "name": "development-plugin",
       "description": "開発を行う際に言語にかかわらず必要となるClaude Plugin",
       "version": "1.0.0",
-      "path": "development-plugin",
       "author": {
         "name": "asunaro276",
         "url": "https://github.com/asunaro276"
-      }
+      },
+      "source": "./plugins/development-plugin"
     }
   ]
 }
