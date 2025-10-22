@@ -2,7 +2,7 @@
   "name": "asunaro-marketplace",
   "description": "私用のplugin marketplace",
   "version": "1.0.0",
-  "author": {
+  "owner": {
     "name": "asunaro276",
     "url": "https://github.com/asunaro276"
   },
