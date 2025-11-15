@@ -107,7 +107,7 @@ css_variables = design_tokens_to_css(tokens)
 
 #### 3.1 プロジェクト規約の確認
 
-実装前に `references/project-convention.md` を読み込み、規約を確認してください：
+実装前にプロジェクトローカルの `${pwd}/.claude/skills/figma-design-implementation/references/project-convention.md` を読み込み、規約を確認してください：
 
 - BEM 命名規則
 - Vue SFC 構造
@@ -115,6 +115,8 @@ css_variables = design_tokens_to_css(tokens)
 - アクセシビリティ要件
 
 **重要:** この規約は **必ず遵守** してください。
+
+ファイルが存在しない場合は、`/fit-to-project figma-design-implementation` コマンドを実行してプロジェクト固有の skill を作成してください。
 
 #### 3.2 Vue コンポーネントの作成
 
@@ -188,7 +190,7 @@ css_variables = design_tokens_to_css(tokens)
 
 #### 4.2 チェックリストの確認
 
-`references/project-convention.md` の最後にあるチェックリストを実行：
+プロジェクトローカルの `${pwd}/.claude/skills/figma-design-implementation/references/project-convention.md` の最後にあるチェックリスト（存在する場合）を実行：
 
 - [ ] BEM 命名規則に従っているか
 - [ ] CSS 変数を使用しているか
@@ -438,27 +440,30 @@ with open('styles/tokens.css', 'w') as f:
 
 ## リソース
 
-### scripts/
+### プロジェクトローカル: ${pwd}/.claude/skills/figma-design-implementation/
 
-- **servers/figma/** - Figma MCP ツールラッパー
-  - `get_design_context.py` - デザインからコード生成
-  - `get_variable_defs.py` - デザイントークン取得
-  - `get_screenshot.py` - スクリーンショット取得
-  - その他のツール
-
-- **design_tokens_to_css.py** - トークン変換ユーティリティ
-
-### references/
-
-- **project-convention.md** - プロジェクト規約（必読、低自由度）
+- **references/project-convention.md** - プロジェクト固有の規約（必読、低自由度）
   - BEM 命名規則
   - Vue コンポーネント構造
   - CSS スタイリング規約
   - アクセシビリティ要件
+  - その他のプロジェクト固有のリソース
 
-### assets/
+### マーケットプレイス: このスキル
 
-現在は空ですが、将来的にボイラープレートやテンプレートを追加可能です。
+- **scripts/** - Figma MCP ツールラッパーとユーティリティ
+  - `servers/figma/` - Figma MCP ツールラッパー
+    - `get_design_context.py` - デザインからコード生成
+    - `get_variable_defs.py` - デザイントークン取得
+    - `get_screenshot.py` - スクリーンショット取得
+    - その他のツール
+  - `design_tokens_to_css.py` - トークン変換ユーティリティ
+
+- **references/project-convention.md** - テンプレート（プロジェクト固有の skill 作成時に使用）
+
+- **assets/** - 現在は空だが、将来的にボイラープレートやテンプレートを追加可能
+
+プロジェクトローカルの skill が作成されている場合は、そちらの references を優先的に参照する。
 
 ---
 

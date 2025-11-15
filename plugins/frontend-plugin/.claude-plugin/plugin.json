@@ -10,6 +10,20 @@
     "Figma Dev Mode MCP": {
       "type": "sse",
       "url": "http://127.0.0.1:3845/sse"
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "${pwd}"
+      ]
     }
   }
 }

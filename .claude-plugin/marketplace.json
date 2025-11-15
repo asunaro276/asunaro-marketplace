@@ -26,16 +26,6 @@
         "url": "https://github.com/asunaro276"
       },
       "source": "./plugins/frontend-plugin"
-    },
-    {
-      "name": "plugin-project-fit",
-      "description": "プロジェクト固有の情報を分析してスキルに適用するプラグイン。既存のスキルにプロジェクトの慣習やアーキテクチャを組み込みます。",
-      "version": "1.0.0",
-      "author": {
-        "name": "asunaro276",
-        "url": "https://github.com/asunaro276"
-      },
-      "source": "./plugins/plugin-project-fit"
     }
   ]
 }

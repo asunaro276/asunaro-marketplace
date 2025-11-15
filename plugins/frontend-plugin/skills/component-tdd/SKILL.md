@@ -33,8 +33,9 @@ description: Vue、React、Astroなどのフロントエンドコンポーネン
    - 既存のコンポーネントの構造やパターンを参考にする
 
 3. **プロジェクト固有の慣習を確認**
-   - `references/project-convention.md`を参照し、プロジェクト固有のHTML/CSS慣習、コンポーネント設計パターン、テストパターンを確認
-   - ファイルが存在しない場合は、コードベースから慣習を推測し、必要に応じてユーザーに確認
+   - プロジェクトローカルの `${pwd}/.claude/skills/component-tdd/references/project-convention.md` を参照し、プロジェクト固有のHTML/CSS慣習、コンポーネント設計パターン、テストパターンを確認
+   - ファイルが存在しない場合は、`/fit-to-project component-tdd` コマンドを実行してプロジェクト固有の skill を作成
+   - プロジェクト固有の skill が作成されていない場合は、コードベースから慣習を推測し、必要に応じてユーザーに確認
 
 ### ステップ2: 仕様のヒアリング
 
@@ -163,7 +164,7 @@ describe('MyComponent', () => {
 
 1. **既存コードの尊重**
    - 既にHTML/CSSが書かれている場合は、極力変更を最小限にする
-   - プロジェクト固有のスタイル慣習（`references/project-convention.md`）に従う
+   - プロジェクト固有のスタイル慣習（プロジェクトローカルの `${pwd}/.claude/skills/component-tdd/references/project-convention.md`）に従う
 
 2. **段階的な実装**
    - 1つのテストケースずつ実装していく
@@ -249,9 +250,9 @@ describe('MyComponent', () => {
 
 このスキルを効果的に使用するには、プロジェクト固有の慣習を理解する必要がある。
 
-### references/project-convention.mdの活用
+### プロジェクトローカルの skill の活用
 
-`references/project-convention.md`には、以下のような情報が含まれる：
+プロジェクトローカルの `${pwd}/.claude/skills/component-tdd/references/project-convention.md` には、以下のような情報が含まれる：
 
 - コンポーネントのディレクトリ構造
 - 命名規則（ファイル名、クラス名、変数名など）
@@ -261,12 +262,17 @@ describe('MyComponent', () => {
 - アクセシビリティガイドライン
 - パフォーマンス最適化のベストプラクティス
 
-このファイルが存在しない場合は、コードベースを分析してプロジェクトの慣習を推測する。不明な点はユーザーに確認する。
+このファイルが存在しない場合は、`/fit-to-project component-tdd` コマンドを実行してプロジェクト固有の skill を作成する。
 
 ## リソース
 
-### references/
+### プロジェクトローカル: ${pwd}/.claude/skills/component-tdd/
 
-- `project-convention.md`: プロジェクト固有のHTML/CSS慣習、コンポーネント設計パターン、テストパターンを記載
+- `references/project-convention.md`: プロジェクト固有のHTML/CSS慣習、コンポーネント設計パターン、テストパターンを記載
+- その他のプロジェクト固有のリソース
 
-このファイルは、プロジェクトごとにカスタマイズされ、プロジェクト固有の規約や慣習を詳細に記述する。
+### マーケットプレイス: このスキル
+
+- `references/project-convention.md`: テンプレート（プロジェクト固有の skill 作成時に使用）
+
+プロジェクトローカルの skill が作成されている場合は、そちらの references を優先的に参照する。
