@@ -1,0 +1,61 @@
+name: Package Skills
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  package-skills:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find and package skills
+        id: package
+        run: |
+          # スキルディレクトリを検索
+          skill_dirs=$(find plugins -type d -path "*/skills/*" -not -path "*/skills/*/references*" -not -path "*/skills/*/assets*" -not -path "*/skills/*/scripts*" | grep -v "^plugins/.*/skills$")
+
+          # 各スキルをzip化
+          mkdir -p packaged-skills
+
+          for skill_dir in $skill_dirs; do
+            # スキル名を取得（例: development-plugin/skills/git-operations -> development-plugin_git-operations）
+            plugin_name=$(echo "$skill_dir" | cut -d'/' -f2)
+            skill_name=$(basename "$skill_dir")
+            zip_name="${plugin_name}_${skill_name}.zip"
+
+            echo "Packaging: $skill_dir -> $zip_name"
+
+            # スキルディレクトリ全体をzip化
+            (cd "$(dirname "$skill_dir")" && zip -r "../../../packaged-skills/$zip_name" "$(basename "$skill_dir")")
+          done
+
+          # パッケージ化されたファイルをリスト表示
+          echo "Packaged skills:"
+          ls -lh packaged-skills/
+
+      - name: Upload skill packages as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skills-packages
+          path: packaged-skills/*.zip
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Create package summary
+        run: |
+          echo "# 📦 Skills Package Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "パッケージ化されたスキル:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for zip_file in packaged-skills/*.zip; do
+            file_name=$(basename "$zip_file")
+            file_size=$(ls -lh "$zip_file" | awk '{print $5}')
+            echo "- \`$file_name\` ($file_size)" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Artifacts セクションからダウンロードできます" >> $GITHUB_STEP_SUMMARY
