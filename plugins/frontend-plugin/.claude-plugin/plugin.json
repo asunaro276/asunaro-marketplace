@@ -1,0 +1,15 @@
+{
+  "name": "frontend-plugin",
+  "description": "フロントエンド開発を行う際に必要となる Claude Plugin。Figma デザインから Vue/HTML/CSS への実装をサポートします。",
+  "version": "1.0.0",
+  "author": {
+    "name": "asunaro276",
+    "url": "https://github.com/asunaro276"
+  },
+  "mcpServers": {
+    "Figma Dev Mode MCP": {
+      "type": "sse",
+      "url": "http://127.0.0.1:3845/sse"
+    }
+  }
+}

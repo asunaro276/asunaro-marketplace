@@ -1,6 +1,6 @@
 {
-  "name": "development-plugin",
-  "description": "開発を行う際に言語にかかわらず必要となるClaude Plugin",
+  "name": "plugin-project-fit",
+  "description": "プロジェクト固有の情報を分析してスキルに適用するプラグイン。既存のスキルにプロジェクトの慣習やアーキテクチャを組み込みます。",
   "version": "1.0.0",
   "author": {
     "name": "asunaro276",

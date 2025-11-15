@@ -1,11 +1,4 @@
 {
-  "name": "development-plugin",
-  "description": "開発を行う際に言語にかかわらず必要となるClaude Plugin",
-  "version": "1.0.0",
-  "author": {
-    "name": "asunaro276",
-    "url": "https://github.com/asunaro276"
-  },
   "mcpServers": {
     "serena": {
       "type": "stdio",
