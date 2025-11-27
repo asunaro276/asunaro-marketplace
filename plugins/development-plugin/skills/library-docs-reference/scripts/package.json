@@ -1,0 +1,28 @@
+{
+  "name": "context7-workflows",
+  "version": "1.0.0",
+  "description": "Context7 MCP workflows for library documentation retrieval",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node context7-workflow.js",
+    "example:basic": "tsx examples/basic-usage.ts",
+    "example:multi": "tsx examples/multi-page.ts",
+    "example:compare": "tsx examples/search-and-compare.ts"
+  },
+  "keywords": [
+    "context7",
+    "mcp",
+    "documentation",
+    "library",
+    "workflow"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,112 +1,245 @@
 ---
 name: library-docs-reference
-description: 
+description:
    context7によるライブラリ情報の取得を完全にコード内で実行。
    MCP Toolsの処理回数を削減
    ユーザーが言及したライブラリのドキュメントやコード例を参照したい時に使用。
    公式で言及されている最新のベストプラクティスを発見。
 ---
 
-# Library Documentation Reference
+# Context7ワークフローの実行手順
 
-このスキルは、Context7 MCPサーバーを活用して、ライブラリのドキュメントやコード例をスクリプト実行によって効率的に参照・取得するためのガイドを提供する。
+このスキルは、Context7 MCPサーバーを使用してライブラリのドキュメントを取得します。
+`scripts/` ディレクトリ配下のワークフロースクリプトを使用して、効率的にドキュメントを取得できます。
 
-## 目的
+## セットアップ
 
-Context7 MCPサーバーは、LLMとAIコードエディタに最新のコードドキュメントを提供する。バージョン固有のドキュメントとコード例をソースから直接取得し、プロンプトに配置することで、幻覚APIを防ぎ、正確なコード生成を支援する。
+### 1. 依存関係のインストール
 
-## 使用タイミング
+```bash
+cd plugins/development-plugin/skills/library-docs-reference/scripts
+npm install
+```
 
-以下の状況でこのスキルを使用する：
+必要なパッケージ：
+- `@modelcontextprotocol/sdk` - MCP SDK
+- `@types/node` - Node.js型定義
+- `tsx` - TypeScript実行環境
+- `typescript` - TypeScriptコンパイラ
 
-1. **新しいライブラリの統合時**: プロジェクトに新しいライブラリを追加する際、最新のAPIドキュメントとコード例が必要な場合
-2. **ライブラリのバージョンアップ時**: 既存のライブラリをアップグレードし、変更されたAPIや新機能を確認する必要がある場合
-3. **特定の機能実装時**: ライブラリの特定の機能（例：フック、ルーティング）について詳細なドキュメントが必要な場合
-4. **エラーのトラブルシューティング**: ライブラリの使用中に発生したエラーを解決するため、公式ドキュメントを参照する場合
+### 2. MCP設定の確認
 
-## 実装パターン
+`plugins/development-plugin/.mcp.json` に以下の設定があることを確認：
 
-### スクリプトベースの実装
+```json
+{
+  "mcpServers": {
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
 
-Context7によるライブラリドキュメント参照は、**スクリプトベースのアプローチのみ**を使用する。`references/`ディレクトリ配下のサンプルコード（`context7_client_example.py`）を基にしたスクリプトを作成し、それを実行する。これにより以下のメリットが得られる：
+## ワークフローの実行方法
 
-- **再現性**: 同じクエリを繰り返し実行できる
-- **カスタマイズ性**: プロジェクト固有の要件に応じてスクリプトを調整できる
-- **効率性**: 複数のライブラリを一括で処理できる
-- **デバッグ性**: スクリプトのログを確認してトラブルシューティングできる
+### 方法1: コマンドラインから直接実行
 
-#### スクリプト作成の基本ワークフロー
+```bash
+cd plugins/development-plugin/skills/library-docs-reference/scripts
 
-1. **サンプルスクリプトを参照**
-   - `references/`ディレクトリ配下の`context7_client_example.py`を参照する
+# 基本的な使い方
+tsx context7-workflow.ts <library-name> [topic] [mode] [page]
 
-2. **スクリプトをカスタマイズ**
-   - ライブラリ名の指定
-   - トピックの設定
-   - モード（`code`または`info`）の選択
-     - `mode='code'`: APIリファレンスとコード例用
-     - `mode='info'`: 概念的なガイド、アーキテクチャ情報用
-   - ページネーション（必要に応じて）
-   - `.claude/tmp` 配下にスクリプトを作成
+# 例: Reactのドキュメントを取得
+tsx context7-workflow.ts react
 
-3. **スクリプトを実行**
-   - スクリプトを実行し、結果を確認する
+# 例: ReactのHooksドキュメントを取得
+tsx context7-workflow.ts react hooks
 
-4. **結果を統合**
-   - 取得したドキュメントとコード例をプロジェクトに適用する
-   - 必要に応じてコードをカスタマイズする
+# 例: Next.jsのルーティングガイドを取得（情報モード）
+tsx context7-workflow.ts next.js routing info 1
+```
 
-### トピック指定のベストプラクティス
+### 方法2: npmスクリプトから実行
 
-スクリプト内で`topic`パラメータを使用して特定のトピックに焦点を当てることができる。効果的なトピック指定の例：
+```bash
+cd plugins/development-plugin/skills/library-docs-reference/scripts
 
-- **具体的な機能**: `"hooks"`, `"routing"`, `"authentication"`
-- **コンポーネント名**: `"Button"`, `"Modal"`, `"Form"`
-- **概念**: `"state management"`, `"data fetching"`, `"error handling"`
+# 基本的な使用例を実行
+npm run example:basic
 
-コンテキストが不十分な場合は、`page`パラメータ（`page=2`, `page=3`など）を使用して追加のページを取得する。
+# 複数ページのドキュメントを取得
+npm run example:multi
 
-## リファレンスファイル
+# ライブラリを比較
+npm run example:compare react vue --topic hooks
+```
 
-このスキルには以下のリファレンスファイルが含まれており、必要に応じて参照する：
+### 方法3: プログラムから使用
 
-- **references/context7-tools.md**: Context7 MCPサーバーのツール詳細とパラメータ仕様
+```typescript
+import {
+  resolveLibraryId,
+  getLibraryDocs,
+  getDocsByLibraryName,
+  closeConnection
+} from './scripts/context7-workflow.js';
 
-## 注意事項
+// ライブラリ名から直接ドキュメントを取得（推奨）
+const docs = await getDocsByLibraryName('react', 'hooks', 'code', 1);
+console.log(docs.content);
 
-- Context7は最新のドキュメントを提供するが、ライブラリのバージョンによって利用可能な機能が異なる場合がある
-- 大規模なドキュメントを取得する際は、スクリプト内でトピックを絞り込んでコンテキストウィンドウを効率的に使用する
-- エラーが発生した場合は、スクリプト内のライブラリIDとトピックの指定を見直す
-- 必ずスクリプトベースのアプローチを使用し、再現性と効率性を確保する
+// 接続をクローズ
+await closeConnection();
+```
+
+## 主な関数
+
+### `resolveLibraryId(libraryName: string)`
+
+ライブラリ名からContext7互換のライブラリIDを解決します。
+
+```typescript
+const result = await resolveLibraryId('react');
+// { matches: [...], selected: { id: '/facebook/react', ... } }
+```
+
+### `getLibraryDocs(libraryId, topic?, mode?, page?)`
+
+ライブラリIDからドキュメントを取得します。
+
+パラメータ：
+- `libraryId`: Context7互換のライブラリID (例: '/mongodb/docs', '/vercel/next.js')
+- `topic`: ドキュメントのトピック (例: 'hooks', 'routing')
+- `mode`: 'code'（デフォルト）または 'info'
+  - `code`: APIリファレンスとコード例
+  - `info`: 概念的なガイドとアーキテクチャ情報
+- `page`: ページ番号（1から開始、最大10）
+
+```typescript
+const docs = await getLibraryDocs('/facebook/react', 'hooks', 'code', 1);
+```
+
+### `getDocsByLibraryName(libraryName, topic?, mode?, page?)`
+
+ライブラリ名から直接ドキュメントを取得する完全なワークフロー（推奨）。
+
+```typescript
+const docs = await getDocsByLibraryName('vue', 'composition-api', 'code', 1);
+```
+
+### `getMultiplePages(libraryId, topic, mode?, maxPages?)`
+
+複数ページのドキュメントを一度に取得します。
+
+```typescript
+const allDocs = await getMultiplePages(
+  '/vercel/next.js',
+  'routing',
+  'code',
+  3
+);
+```
 
 ## 使用例
 
-### 例1: Reactのフックに関するドキュメント取得
+### 例1: Reactのフックドキュメントを取得
 
-```python
-# scripts/get_react_hooks.py を作成
-# context7_client_example.py を基に、以下のパラメータでカスタマイズ：
-# - library_name: "react"
-# - topic: "hooks"
-# - mode: "code"
-
-# スクリプトを実行
-python scripts/get_react_hooks.py
+```bash
+tsx context7-workflow.ts react hooks
 ```
 
-### 例2: Next.jsのルーティングに関する概念的ガイド取得
+### 例2: 複数のフレームワークを比較
 
-```python
-# scripts/get_nextjs_routing.py を作成
-# context7_client_example.py を基に、以下のパラメータでカスタマイズ：
-# - library_name: "next.js"
-# - topic: "routing"
-# - mode: "info"
-
-# スクリプトを実行
-python scripts/get_nextjs_routing.py
+```bash
+tsx examples/search-and-compare.ts react vue svelte --topic state-management
 ```
 
-## まとめ
+### 例3: Next.jsのルーティングを3ページ取得
 
-このスキルを使用することで、Context7 MCPサーバーを通じて最新のライブラリドキュメントとコード例を効率的に取得し、プロジェクトに統合できる。スクリプトベースのアプローチを活用することで、再現性と効率性を高め、開発プロセスを加速させることができる。
+```bash
+tsx examples/multi-page.ts /vercel/next.js routing code 3
+```
+
+### 例4: プログラムから複数ページを処理
+
+```typescript
+import { getMultiplePages, closeConnection } from './scripts/context7-workflow.js';
+
+try {
+  const pages = await getMultiplePages('/facebook/react', 'hooks', 'code', 5);
+
+  // 各ページを処理
+  for (const [index, page] of pages.entries()) {
+    console.log(`=== Page ${index + 1} ===`);
+    console.log(page.content);
+  }
+} finally {
+  await closeConnection();
+}
+```
+
+## ワークフローの内部動作
+
+### `getDocsByLibraryName` の処理フロー
+
+1. **ライブラリID解決**: `resolveLibraryId()` を呼び出してライブラリ名からIDを取得
+   - Context7 MCP の `resolve-library-id` ツールを使用
+   - 複数の候補から最も関連性の高いものを選択
+
+2. **ドキュメント取得**: `getLibraryDocs()` で実際のドキュメントを取得
+   - Context7 MCP の `get-library-docs` ツールを使用
+   - トピック、モード、ページを指定
+
+3. **結果の返却**: ドキュメント内容とメタデータを返す
+
+### MCPクライアントの仕組み
+
+`mcp-client.ts` は以下の機能を提供：
+
+1. **設定読み込み**: `.mcp.json` からContext7の設定を読み込み
+2. **接続管理**: SSE（Server-Sent Events）を使用してHTTP接続を確立
+3. **ツール呼び出し**: MCPツールを呼び出してレスポンスをパース
+4. **接続キャッシュ**: 複数回の呼び出しで接続を再利用
+
+```typescript
+// mcp-client.ts の主要関数
+export async function callMCPTool<T>(toolName: string, input: any): Promise<T>
+export async function closeConnection(): Promise<void>
+```
+
+## トラブルシューティング
+
+### エラー: "MCP server 'context7' not found"
+
+`.mcp.json` の設定を確認してください。ファイルは `plugins/development-plugin/.mcp.json` に配置されている必要があります。
+
+### エラー: "Cannot find name 'console'" または型エラー
+
+```bash
+cd scripts
+npm install @types/node
+```
+
+### エラー: "No library found for: xxx"
+
+ライブラリ名を変更して試してください：
+- "react" → "React" または "facebook/react"
+- "nextjs" → "next.js" または "next"
+- "vue" → "Vue" または "vuejs"
+
+### 接続がタイムアウトする
+
+Context7 APIキーが正しいか確認してください。また、ネットワーク接続を確認してください。
+
+## 詳細情報
+
+より詳しい使い方については、以下を参照してください：
+- `scripts/README.md` - 詳細なドキュメント
+- `scripts/examples/` - 各種使用例
+- [Context7 Documentation](https://context7.com)
