@@ -1,4 +1,7 @@
-import { callMCPTool, closeConnection } from './mcp-client.js';
+import { callMCPTool, closeConnection as closeClientConnection } from './mcp-client.js';
+
+// Re-export for convenience
+export { closeClientConnection as closeConnection };
 
 interface LibraryMatch {
   id: string;
@@ -238,7 +241,7 @@ Modes:
       console.error('Error:', error);
       process.exit(1);
     } finally {
-      await closeConnection();
+      await closeClientConnection();
     }
   })();
 }
