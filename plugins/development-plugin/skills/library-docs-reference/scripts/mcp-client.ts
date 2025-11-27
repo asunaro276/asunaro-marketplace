@@ -1,5 +1,5 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { readFileSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -50,7 +50,9 @@ function extractPayload(result: any): any {
         // JSONとしてパース可能な場合はパース
         return JSON.parse(firstContent.text);
       } catch {
-        // パースできない場合はそのまま返す
+        // パースできない場合はテキストをそのまま返す
+        // Context7のresolve-library-idはテキスト形式で返すため、
+        // 後続の処理でパースする必要がある
         return firstContent.text;
       }
     }
@@ -76,10 +78,12 @@ async function getClient(): Promise<Client> {
     throw new Error('URL is required for HTTP MCP server');
   }
 
-  const transport = new SSEClientTransport(
+  const transport = new StreamableHTTPClientTransport(
     new URL(config.url),
     {
-      headers: config.headers || {}
+      requestInit: {
+        headers: config.headers || {}
+      }
     }
   );
 
@@ -93,12 +97,20 @@ async function getClient(): Promise<Client> {
   return client;
 }
 
-export async function callMCPTool<T>(toolName: string, input: any): Promise<T> {
+export async function callMCPTool<T>(toolName: string, input: any, timeoutMs: number = 30000): Promise<T> {
   const client = await getClient();
-  const result = await client.callTool({
+
+  // タイムアウト付きでツールを呼び出す
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`MCP tool call timed out after ${timeoutMs}ms`)), timeoutMs);
+  });
+
+  const callPromise = client.callTool({
     name: toolName,
     arguments: input
   });
+
+  const result = await Promise.race([callPromise, timeoutPromise]);
 
   return extractPayload(result) as T;
 }

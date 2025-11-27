@@ -28,20 +28,63 @@ interface Documentation {
 export async function resolveLibraryId(libraryName: string): Promise<ResolveLibraryResponse> {
   console.log(`\n📚 Resolving library ID for: ${libraryName}`);
 
-  const result = await callMCPTool<ResolveLibraryResponse>(
-    'resolve-library-id',
-    { libraryName }
-  );
+  try {
+    const rawResult = await callMCPTool<any>(
+      'resolve-library-id',
+      { libraryName },
+      30000 // 30秒のタイムアウト
+    );
 
-  console.log(`✅ Found ${result.matches?.length || 0} matches`);
-  if (result.selected) {
-    console.log(`   Selected: ${result.selected.id} (${result.selected.name})`);
-    if (result.selected.benchmark_score) {
-      console.log(`   Quality Score: ${result.selected.benchmark_score}/100`);
+    // Context7はテキスト形式で返すため、手動でパース
+    let result: ResolveLibraryResponse;
+
+    if (typeof rawResult === 'string') {
+      // テキストレスポンスをパースして構造化
+      const matches: LibraryMatch[] = [];
+      const libraryBlocks = rawResult.split('----------').filter(block => block.trim());
+
+      for (const block of libraryBlocks) {
+        const titleMatch = block.match(/- Title: (.+)/);
+        const idMatch = block.match(/- Context7-compatible library ID: (.+)/);
+        const descMatch = block.match(/- Description: (.+)/);
+        const snippetsMatch = block.match(/- Code Snippets: (\d+)/);
+        const reputationMatch = block.match(/- Source Reputation: (.+)/);
+        const scoreMatch = block.match(/- Benchmark Score: ([\d.]+)/);
+
+        if (titleMatch && idMatch) {
+          matches.push({
+            id: idMatch[1].trim(),
+            name: titleMatch[1].trim(),
+            description: descMatch ? descMatch[1].trim() : undefined,
+            code_snippet_count: snippetsMatch ? parseInt(snippetsMatch[1]) : 0,
+            source_reputation: reputationMatch ? reputationMatch[1].trim() : undefined,
+            benchmark_score: scoreMatch ? parseFloat(scoreMatch[1]) : undefined
+          });
+        }
+      }
+
+      // 最初にマッチしたものを選択
+      result = {
+        matches,
+        selected: matches[0]
+      };
+    } else {
+      result = rawResult;
     }
-  }
 
-  return result;
+    console.log(`✅ Found ${result.matches?.length || 0} matches`);
+    if (result.selected) {
+      console.log(`   Selected: ${result.selected.id} (${result.selected.name})`);
+      if (result.selected.benchmark_score) {
+        console.log(`   Quality Score: ${result.selected.benchmark_score}/100`);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`❌ Failed to resolve library ID: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
+  }
 }
 
 /**
@@ -72,15 +115,20 @@ export async function getLibraryDocs(
     args.topic = topic;
   }
 
-  const result = await callMCPTool<any>('get-library-docs', args);
+  try {
+    const result = await callMCPTool<any>('get-library-docs', args, 60000); // 60秒のタイムアウト
 
-  console.log(`✅ Documentation retrieved successfully`);
+    console.log(`✅ Documentation retrieved successfully`);
 
-  return {
-    content: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
-    page,
-    hasMore: true // Context7は最大10ページまでサポート
-  };
+    return {
+      content: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+      page,
+      hasMore: true // Context7は最大10ページまでサポート
+    };
+  } catch (error) {
+    console.error(`❌ Failed to fetch documentation: ${error instanceof Error ? error.message : String(error)}`);
+    throw error;
+  }
 }
 
 /**

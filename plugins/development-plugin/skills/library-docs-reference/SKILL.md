@@ -47,25 +47,7 @@ npm install
 
 ## ワークフローの実行方法
 
-### 方法1: コマンドラインから直接実行
-
-```bash
-cd plugins/development-plugin/skills/library-docs-reference/scripts
-
-# 基本的な使い方
-tsx context7-workflow.ts <library-name> [topic] [mode] [page]
-
-# 例: Reactのドキュメントを取得
-tsx context7-workflow.ts react
-
-# 例: ReactのHooksドキュメントを取得
-tsx context7-workflow.ts react hooks
-
-# 例: Next.jsのルーティングガイドを取得（情報モード）
-tsx context7-workflow.ts next.js routing info 1
-```
-
-### 方法2: npmスクリプトから実行
+### 方法1: npmスクリプト実行
 
 ```bash
 cd plugins/development-plugin/skills/library-docs-reference/scripts
@@ -80,7 +62,7 @@ npm run example:multi
 npm run example:compare react vue --topic hooks
 ```
 
-### 方法3: プログラムから使用
+### 方法2: プログラムから使用
 
 ```typescript
 import {
