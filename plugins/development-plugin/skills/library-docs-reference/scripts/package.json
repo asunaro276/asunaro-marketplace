@@ -5,10 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node context7-workflow.js",
-    "example:basic": "tsx examples/basic-usage.ts",
-    "example:multi": "tsx examples/multi-page.ts",
-    "example:compare": "tsx examples/search-and-compare.ts"
+    "start": "node context7-workflow.js"
   },
   "keywords": [
     "context7",

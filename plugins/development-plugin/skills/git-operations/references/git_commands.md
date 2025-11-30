@@ -114,19 +114,19 @@ git revert <commit-hash>
 git branch <branch-name>
 
 # ブランチに切り替え
-git checkout <branch-name>
+git switch <branch-name>
 
 # ブランチを作成して切り替え
-git checkout -b <branch-name>
+git switch -c <branch-name>
 
 # 特定のコミットからブランチを作成
-git checkout -b <branch-name> <commit-hash>
+git switch -c <branch-name> <commit-hash>
 
 # リモートブランチから新しいブランチを作成
-git checkout -b <branch-name> origin/<remote-branch>
+git switch -c <branch-name> origin/<remote-branch>
 
 # 前のブランチに戻る
-git checkout -
+git switch -
 ```
 
 ### ブランチの管理
@@ -556,11 +556,11 @@ git config --list --show-origin
 ```bash
 # 削除されたコミットを復元
 git reflog
-git checkout <commit-hash>
+git restore <commit-hash>
 
 # 削除されたブランチを復元
 git reflog
-git checkout -b <branch-name> <commit-hash>
+git switch -b <branch-name> <commit-hash>
 
 # 失われたコミットを見つける
 git fsck --lost-found

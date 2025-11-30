@@ -55,15 +55,6 @@ npm install
 
 ```bash
 cd plugins/development-plugin/skills/library-docs-reference/scripts
-
-# 基本的な使用例を実行
-npm run example:basic
-
-# 複数ページのドキュメントを取得
-npm run example:multi
-
-# ライブラリを比較
-npm run example:compare react vue --topic hooks
 ```
 
 ### 方法2: プログラムから使用
@@ -138,18 +129,6 @@ const allDocs = await getMultiplePages(
 
 ```bash
 tsx context7-workflow.ts react hooks
-```
-
-### 例2: 複数のフレームワークを比較
-
-```bash
-tsx examples/search-and-compare.ts react vue svelte --topic state-management
-```
-
-### 例3: Next.jsのルーティングを3ページ取得
-
-```bash
-tsx examples/multi-page.ts /vercel/next.js routing code 3
 ```
 
 ### 例4: プログラムから複数ページを処理
@@ -227,5 +206,4 @@ Context7 APIキーが正しいか確認してください。また、ネット�
 
 より詳しい使い方については、以下を参照してください：
 - `scripts/README.md` - 詳細なドキュメント
-- `scripts/examples/` - 各種使用例
 - [Context7 Documentation](https://context7.com)

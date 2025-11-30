@@ -6,7 +6,6 @@ Context7 MCPサーバーを使用してライブラリのドキュメントを�
 
 - `mcp-client.ts` - MCP クライアントの基本実装
 - `context7-workflow.ts` - Context7を使用したドキュメント取得ワークフロー
-- `examples/` - 使用例スクリプト
 
 ## セットアップ
 

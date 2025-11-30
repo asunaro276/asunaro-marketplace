@@ -157,7 +157,7 @@ git push --all
 ```
 
 **重要なプッシュのルール**:
-- ブランチ名は `claude/` で始まり、セッションIDで終わること（そうでない場合403エラー）
+- ブランチ名は `feature/` で始まり、セッションIDで終わること（そうでない場合403エラー）
 - ネットワークエラー時は最大4回リトライ（指数バックオフ: 2s, 4s, 8s, 16s）
 - `--force` は main/master ブランチには使用しない
 
@@ -272,7 +272,6 @@ git stash drop
 - **hotfix/**: 緊急修正用
 - **refactor/**: リファクタリング用
 - **docs/**: ドキュメント更新用
-- **claude/**: Claude Code用（例: `claude/add-feature-{session-id}`）
 
 ### Git安全性プロトコル
 

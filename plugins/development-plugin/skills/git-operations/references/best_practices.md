@@ -381,8 +381,8 @@ git reset --hard HEAD~1
 git reflog
 
 # コミットを復元
-git checkout <commit-hash>
-git checkout -b <recovery-branch>
+git restore <commit-hash>
+git switch -c <recovery-branch>
 ```
 
 #### 4. リベースの中断
