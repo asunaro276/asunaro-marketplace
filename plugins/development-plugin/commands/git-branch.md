@@ -9,7 +9,7 @@ description: 現在の変更内容または命令内容に基づいてブラン�
 ## 使用方法
 
 ```
-/git-branch-and-work [作業内容]
+/git-branch [作業内容]
 ```
 
 - **作業内容** (オプション): ブランチ作成後に実行したい作業の説明
@@ -148,7 +148,7 @@ git diff --staged
 ### 例1: 作業内容を指定してブランチ作成
 
 ```
-/git-branch-and-work ユーザー認証機能を追加
+/git-branch ユーザー認証機能を追加
 ```
 
 → `feature/add-user-authentication` ブランチを作成し、ユーザー認証機能の実装を開始
@@ -158,7 +158,7 @@ git diff --staged
 ログイン画面のバグ修正コードを既に編集済みの状態で：
 
 ```
-/git-branch-and-work
+/git-branch
 ```
 
 → 変更内容を分析し、`fix/login-screen-bug` などのブランチを作成
@@ -168,10 +168,10 @@ git diff --staged
 変更がない状態で：
 
 ```
-/git-branch-and-work
+/git-branch
 ```
 
-→ ユーザーに作業内容をヒアリングし、その内容に基づいてブランチを作成
+→ ユーザーに作業内容をヒアリングし、その内容に基づいてブランチを作成。その後命令に従って作業を行う
 
 ## ベストプラクティス
 
@@ -186,3 +186,4 @@ git diff --staged
 - ブランチ作成前に重要な変更はコミットしておくことを推奨します
 - git-operationsスキルのGit安全性プロトコルに従います
 - 既に同名のブランチが存在する場合は、異なる名前を提案します
+7*#2QTRr&*KaTaflp9D
