@@ -76,10 +76,11 @@ git branch --show-current
 ブランチ名は以下の形式で生成します：
 
 ```
-<type>/<brief-description>
+<type>/<brief-description>-$(date '+%Y%m%d%H%M%S')
 ```
 
 - **type**: feature, fix, refactor, docs, test など
+  - fix, hotfixは明示的に指定されたときのみ使う
 - **brief-description**: 作業内容を簡潔に表す英語の説明（kebab-case）
 
 例：
@@ -94,7 +95,7 @@ git branch --show-current
 
 ```bash
 # 新しいブランチを作成して切り替え
-git checkout -b <ブランチ名>
+git switch -c <ブランチ名>
 ```
 
 ブランチ作成後、以下で確認：
