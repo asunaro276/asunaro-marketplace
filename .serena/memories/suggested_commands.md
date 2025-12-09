@@ -38,7 +38,7 @@ git log --oneline
 ### セットアップ
 ```bash
 # スキルディレクトリに移動
-cd plugins/development-plugin/skills/library-docs-reference/scripts
+cd plugins/git-operation/skills/library-docs-reference/scripts
 
 # 依存関係のインストール
 npm install
@@ -82,7 +82,7 @@ ls -la
 ls -la plugins/
 
 # スキル一覧を確認
-ls -la plugins/development-plugin/skills/
+ls -la plugins/git-operation/skills/
 ls -la plugins/frontend-plugin/skills/
 ```
 

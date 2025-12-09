@@ -11,7 +11,7 @@ Claude Codeで使用するプラグインのマーケットプレイス。複数
 ```
 asunaro-marketplace/
 ├── plugins/
-│   ├── development-plugin/     # 開発全般に必要なプラグイン
+│   ├── git-operation/     # 開発全般に必要なプラグイン
 │   │   ├── skills/
 │   │   │   ├── git-operations/              # Git操作ガイド
 │   │   │   └── library-docs-reference/      # Context7によるライブラリドキュメント取得
@@ -33,7 +33,7 @@ asunaro-marketplace/
 
 ## プラグイン一覧
 
-### 1. development-plugin
+### 1. git-operation
 **説明**: 開発を行う際に言語にかかわらず必要となるClaude Plugin
 
 **スキル**:
@@ -55,7 +55,7 @@ asunaro-marketplace/
 
 ### 使用しているMCPサーバー
 
-**development-plugin:**
+**git-operation:**
 - Serena MCP (コードベース分析とシンボリック操作)
 - Context7 MCP (ライブラリドキュメント取得)
 

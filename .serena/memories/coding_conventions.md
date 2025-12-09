@@ -48,7 +48,7 @@ description: スキルの説明（日本語）
 
 ## MCP 設定
 
-### development-plugin の .mcp.json
+### git-operation の .mcp.json
 - Serena MCP: コードベース分析用
 - Context7 MCP: ライブラリドキュメント取得用（HTTPベース）
 

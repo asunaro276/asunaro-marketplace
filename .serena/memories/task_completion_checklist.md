@@ -28,7 +28,7 @@ npm run example:basic
 
 ### 3. MCP設定の確認
 
-#### development-plugin
+#### git-operation
 - [ ] `.mcp.json` にContext7の設定が正しく記載されているか
 - [ ] APIキーが有効か
 - [ ] Serena MCPの設定が正しいか
@@ -88,7 +88,7 @@ git push -u origin <branch-name>
 #### スキルの動作確認
 ```bash
 # library-docs-reference の例
-cd plugins/development-plugin/skills/library-docs-reference/scripts
+cd plugins/git-operation/skills/library-docs-reference/scripts
 tsx context7-workflow.ts react hooks
 ```
 

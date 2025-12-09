@@ -23,7 +23,7 @@ jobs:
           mkdir -p packaged-skills
 
           for skill_dir in $skill_dirs; do
-            # スキル名を取得（例: development-plugin/skills/git-operations -> development-plugin_git-operations）
+            # スキル名を取得（例: git-operation/skills/git-operations -> git-operation_git-operations）
             plugin_name=$(echo "$skill_dir" | cut -d'/' -f2)
             skill_name=$(basename "$skill_dir")
             zip_name="${plugin_name}_${skill_name}.zip"

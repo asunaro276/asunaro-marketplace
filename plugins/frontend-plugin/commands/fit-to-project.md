@@ -73,9 +73,9 @@ args: <skill-name> [notes]
    - **特記事項で指定された内容を優先的に探索**
 
 **使用するツール:**
-- `mcp__plugin_development-plugin_serena__find_file` でドキュメントファイルを検索
-- `mcp__plugin_development-plugin_serena__search_for_pattern` で特定のパターンを検索
-- `mcp__plugin_development-plugin_serena__list_dir` でディレクトリ構造を把握
+- `mcp__plugin_git-operation_serena__find_file` でドキュメントファイルを検索
+- `mcp__plugin_git-operation_serena__search_for_pattern` で特定のパターンを検索
+- `mcp__plugin_git-operation_serena__list_dir` でディレクトリ構造を把握
 
 ### ステップ2: コードベースの収集と分析
 
@@ -104,10 +104,10 @@ args: <skill-name> [notes]
    - **特記事項に基づく慣習の優先順位付け**
 
 **使用するツール:**
-- `mcp__plugin_development-plugin_serena__find_file` で対象ファイルを検索
-- `mcp__plugin_development-plugin_serena__get_symbols_overview` でシンボル概要を取得
-- `mcp__plugin_development-plugin_serena__find_symbol` で特定のシンボルを検索
-- `mcp__plugin_development-plugin_serena__search_for_pattern` でコードパターンを検索
+- `mcp__plugin_git-operation_serena__find_file` で対象ファイルを検索
+- `mcp__plugin_git-operation_serena__get_symbols_overview` でシンボル概要を取得
+- `mcp__plugin_git-operation_serena__find_symbol` で特定のシンボルを検索
+- `mcp__plugin_git-operation_serena__search_for_pattern` でコードパターンを検索
 
 ### ステップ3: 分析結果の整理
 
