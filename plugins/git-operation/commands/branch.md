@@ -42,24 +42,16 @@ git diff
 git branch --show-current
 ```
 
-### ステップ3: mainブランチへの移動と最新化
+### ステップ3: origin/mainの最新化
 
-現在のブランチがmainブランチでない場合、mainブランチに移動して最新の状態に更新します：
+現在のブランチを変更せず、リモートのmainブランチの最新状態を取得します：
 
 ```bash
-# 現在のブランチを確認
-current_branch=$(git branch --show-current)
-
-# mainブランチでない場合、mainブランチに切り替え
-if [ "$current_branch" != "main" ]; then
-  git switch main
-fi
-
-# 最新の状態に更新
-git pull origin main
+# リモートのmainブランチを最新化
+git fetch origin main
 ```
 
-これにより、新しいブランチが常に最新のmainブランチから作成されることを保証します。
+これにより、現在の作業ブランチを維持したまま、最新のorigin/mainの状態を取得できます。新しいブランチはこのorigin/mainから作成されます。
 
 ### ステップ4: ブランチ名の決定
 
@@ -108,11 +100,11 @@ git pull origin main
 
 ### ステップ5: ブランチの作成
 
-生成したブランチ名で新しいブランチを作成します：
+生成したブランチ名で、origin/mainから新しいブランチを作成します：
 
 ```bash
-# 新しいブランチを作成して切り替え
-git switch -c <ブランチ名>
+# origin/mainから新しいブランチを作成して切り替え
+git switch -c <ブランチ名> origin/main
 ```
 
 ブランチ作成後、以下で確認：
