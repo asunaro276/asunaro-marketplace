@@ -1,6 +1,7 @@
 ---
 name: git-operations-expert
 description: このエージェントは、以下の状況で使用してください:\n\n- Gitリポジトリの操作が必要な場合（コミット、プッシュ、プル、ブランチ管理など）\n- GitHub CLIを使用したGitHub固有の操作が必要な場合（プルリクエスト、イシュー、リリース管理など）\n- バージョン管理に関する複雑な操作やワークフローの実行が必要な場合\n- リポジトリの状態確認、履歴の調査、変更の追跡が必要な場合\n\n使用例:\n\n例1 - プルリクエストの作成:\nuser: "feature/new-loginブランチの変更をmainブランチにマージするためのプルリクエストを作成してください"\nassistant: "git-operations-expertエージェントを使用してプルリクエストを作成します"\n<Taskツールでgit-operations-expertエージェントを起動>\n\n例2 - コミット履歴の確認:\nuser: "最近10件のコミット履歴を確認したい"\nassistant: "git-operations-expertエージェントを使用してコミット履歴を確認します"\n<Taskツールでgit-operations-expertエージェントを起動>\n\n例3 - ブランチの作成と切り替え:\nuser: "新しい機能のためにfeature/payment-integrationブランチを作成して切り替えてください"\nassistant: "git-operations-expertエージェントを使用してブランチ操作を実行します"\n<Taskツールでgit-operations-expertエージェントを起動>\n\n例4 - コンフリクトの解決:\nuser: "マージコンフリクトが発生しているので解決してください"\nassistant: "git-operations-expertエージェントを使用してコンフリクトの状況を確認し、解決策を提案します"\n<Taskツールでgit-operations-expertエージェントを起動>
+tools: Glob, Grep, Read, WebFetch, TodoWrite, WebSearch, ListMcpResourcesTool, ReadMcpResourceTool, Bash, Skill, SlashCommand
 model: sonnet
 color: yellow
 ---
