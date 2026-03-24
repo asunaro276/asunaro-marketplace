@@ -20,10 +20,13 @@ git-operations-expertサブエージェントを使用して、現在ブラン�
   - mainブランチでないことを確認（main/masterの場合は `/git-branch` の実行を促して終了）
   - コミットが存在することを確認（コミットがない場合は `/git-commit` の実行を促して終了）
 
-3. PRテンプレートの確認（親ディレクトリも含めて探索）:
-  - .github/PULL_REQUEST_TEMPLATE.md, .github/pull_request_template.md
-  - .github/PULL_REQUEST_TEMPLATE/, PULL_REQUEST_TEMPLATE.md
-  - 見つからない場合は親ディレクトリも探索
+3. PRテンプレートの確認:
+  - `git rev-parse --show-toplevel` でGitルートディレクトリを取得する
+  - Gitルートディレクトリ配下の以下のパスを順番に探索する:
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/pull_request_template.md
+    - .github/PULL_REQUEST_TEMPLATE/ 配下の最初のファイル
+    - PULL_REQUEST_TEMPLATE.md
 
 4. すべてのコミット履歴と変更内容を分析してPR内容を作成:
   - タイトル: 変更内容を総括した簡潔な日本語タイトル（1行）
@@ -54,6 +57,10 @@ git-operations-expertサブエージェントを使用して、現在ブラン�
   )"
 
 8. 作成されたPRのURLを返す
+
+9. /loop を使って5分毎にCIを監視する:
+  `/loop 5m gh pr checks <PR番号> --watch`
+  - CIが成功/失敗で完了したら監視を終了する
 ```
 
 ## 注意事項
