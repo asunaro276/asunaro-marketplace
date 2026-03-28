@@ -1,12 +1,6 @@
 ---
-name: daily-report
-description: >
-  このスキルは「日報を作って」「今日のClaude Code利用状況をまとめて」「デイリーレポート生成」
-  「日報生成」「今日の作業まとめ」などのリクエストで使用します。
-  cc-summarizerスクリプトでセッション履歴を並列解析し、Claudeが日本語の日報に仕上げます。
-metadata:
-  version: "0.1.0"
-  author: "nakano"
+name: cc-daily-report:daily-report
+description: このスキルは「日報を作って」「今日のClaude Code利用状況をまとめて」「デイリーレポート生成」「日報生成」「今日の作業まとめ」などのリクエストで使用します。cc-summarizerスクリプトでセッション履歴を並列解析し、Claudeが日本語の日報に仕上げます。
 ---
 
 # Claude Code 日報生成スキル
