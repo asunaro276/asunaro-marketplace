@@ -1,0 +1,19 @@
+{
+  "name": "pr-context-mcp",
+  "version": "1.0.0",
+  "description": "コードベース調査時にファイルの特定行に関連するPRのコンテキスト（ディスクリプション・コメント）を取得するMCPサーバー",
+  "author": {
+    "name": "asunaro276",
+    "url": "https://github.com/asunaro276"
+  },
+  "mcpServers": {
+    "pr-context": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "."],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  }
+}

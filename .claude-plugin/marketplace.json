@@ -35,6 +35,16 @@
         "name": "nakano"
       },
       "source": "./plugins/cc-daily-report"
+    },
+    {
+      "name": "pr-context-mcp",
+      "description": "コードベース調査時にファイルの特定行に関連するPRのコンテキスト（ディスクリプション・コメント）を取得するMCPサーバー。コードがなぜそのように書かれているかを調査するのに役立つ。",
+      "version": "1.0.0",
+      "author": {
+        "name": "asunaro276",
+        "url": "https://github.com/asunaro276"
+      },
+      "source": "./plugins/pr-context-mcp"
     }
   ]
 }
