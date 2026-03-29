@@ -13,28 +13,18 @@ Claude Code作業データと今日のメモを素材にインタラクティブ
 
 ## 実行手順
 
-### ステップ1：バイナリの準備
+### ステップ1：バイナリのパスを確定する
 
-スクリプトのパスを特定する：
+バイナリは同梱済みなので、ファイル存在確認やビルドは行わない。
+パスだけ確定してステップ2に進む。
 
-```
-${CLAUDE_PLUGIN_ROOT}/scripts/cc-summarizer/main.go
-```
+- Linux/macOS: `${CLAUDE_PLUGIN_ROOT}/scripts/cc-summarizer/cc-summarizer`
+- Windows: `${CLAUDE_PLUGIN_ROOT}\scripts\cc-summarizer\cc-summarizer.exe`
 
-バイナリが存在するか確認し、なければコンパイルする。OSに応じてバイナリ名を切り替える：
-
-- Linux/macOS: `cc-summarizer`
-- Windows: `cc-summarizer.exe`
-
-バイナリが存在しない場合、以下のコマンドでコンパイルする：
+**ステップ2でバイナリ実行に失敗した場合のみ**、以下のコマンドでビルドしてから再実行する：
 
 ```bash
 cd "${CLAUDE_PLUGIN_ROOT}/scripts/cc-summarizer" && go build -o cc-summarizer ./main.go
-```
-
-Windowsの場合：
-```powershell
-cd "${CLAUDE_PLUGIN_ROOT}\scripts\cc-summarizer"; go build -o cc-summarizer.exe .\main.go
 ```
 
 ### ステップ2：スクリプト実行
