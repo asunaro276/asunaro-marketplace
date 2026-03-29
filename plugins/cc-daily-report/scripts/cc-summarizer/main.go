@@ -179,10 +179,11 @@ func main() {
 	}
 
 	out := domain.DailyOutput{
-		Date:              targetDate,
-		TotalRepositories: len(repos),
-		TotalSessions:     len(sessions),
-		Repositories:      repos,
+		Date:                     targetDate,
+		TotalRepositories:        len(repos),
+		TotalSessions:            len(sessions),
+		Repositories:             repos,
+		RecommendedQuestionCount: domain.CalcRecommendedQuestionCount(len(sessions)),
 	}
 	for _, r := range repos {
 		out.TotalInputTokens += r.TotalInputTokens

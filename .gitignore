@@ -1,0 +1,25 @@
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+
+# Shell / dotfiles
+.bash_profile
+.bashrc
+.zshrc
+.zprofile
+.profile
+.gitconfig
+.ripgreprc
+
+# Claude Code
+.claude/
+
+# MCP
+.mcp.json
+
+# Git submodules metadata (if not using submodules intentionally)
+# .gitmodules
+
+# Compiled binaries
+plugins/**/scripts/**/cc-summarizer/cc-summarizer

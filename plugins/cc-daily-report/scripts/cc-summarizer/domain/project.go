@@ -67,10 +67,23 @@ type RepositorySummary struct {
 
 // DailyOutput は日次集計の最終出力構造体。
 type DailyOutput struct {
-	Date              string              `json:"date"`
-	TotalRepositories int                 `json:"total_repositories"`
-	TotalSessions     int                 `json:"total_sessions"`
-	TotalInputTokens  int                 `json:"total_input_tokens"`
-	TotalOutputTokens int                 `json:"total_output_tokens"`
-	Repositories      []RepositorySummary `json:"repositories"`
+	Date                     string              `json:"date"`
+	TotalRepositories        int                 `json:"total_repositories"`
+	TotalSessions            int                 `json:"total_sessions"`
+	TotalInputTokens         int                 `json:"total_input_tokens"`
+	TotalOutputTokens        int                 `json:"total_output_tokens"`
+	Repositories             []RepositorySummary `json:"repositories"`
+	RecommendedQuestionCount int                 `json:"recommended_question_count"`
+}
+
+// CalcRecommendedQuestionCount はセッション数に基づいて推奨質問数を返す。
+func CalcRecommendedQuestionCount(totalSessions int) int {
+	switch {
+	case totalSessions >= 20:
+		return 4
+	case totalSessions >= 10:
+		return 3
+	default:
+		return 2
+	}
 }

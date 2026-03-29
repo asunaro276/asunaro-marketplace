@@ -436,3 +436,48 @@ func TestFileHistorySnapshotIgnored(t *testing.T) {
 		t.Errorf("expected 1 session, got %d", result.TotalSessions)
 	}
 }
+
+// UC10: recommended_question_count がセッション数に基づいて正しく計算される。
+func TestRecommendedQuestionCount(t *testing.T) {
+	tests := []struct {
+		name          string
+		sessionCount  int
+		expectedCount int
+	}{
+		{"1 session -> 2 questions", 1, 2},
+		{"5 sessions -> 2 questions", 5, 2},
+		{"9 sessions -> 2 questions", 9, 2},
+		{"10 sessions -> 3 questions", 10, 3},
+		{"15 sessions -> 3 questions", 15, 3},
+		{"19 sessions -> 3 questions", 19, 3},
+		{"20 sessions -> 4 questions", 20, 4},
+		{"30 sessions -> 4 questions", 30, 4},
+		{"100 sessions -> 4 questions", 100, 4},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			bin := buildBinary(t)
+			projectsDir := makeProjectsDir(t)
+
+			date := "2024-06-15"
+			cwd := "/home/user/myapp"
+
+			for i := 0; i < tc.sessionCount; i++ {
+				sessionID := fmt.Sprintf("sess-%d", i)
+				ts := fmt.Sprintf("%sT%02d:00:00Z", date, i%24)
+				writeJSONL(t, projectsDir, "-home-user-myapp", sessionID, date, []string{
+					userEntry(sessionID, cwd, ts, fmt.Sprintf("task %d", i)),
+					assistantEntry(sessionID, cwd, ts, 10, 5, "done"),
+				})
+			}
+
+			result := run(t, bin, date)
+
+			if result.RecommendedQuestionCount != tc.expectedCount {
+				t.Errorf("recommended_question_count: got %d, want %d (sessions: %d)",
+					result.RecommendedQuestionCount, tc.expectedCount, tc.sessionCount)
+			}
+		})
+	}
+}
