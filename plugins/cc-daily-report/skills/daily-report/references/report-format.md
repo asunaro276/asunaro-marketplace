@@ -4,21 +4,52 @@
 
 ```json
 {
-  "date": "2026-03-28",
-  "total_sessions": 3,
+  "date": "2026-03-29",
+  "total_repositories": 2,
+  "total_sessions": 10,
   "total_input_tokens": 45000,
-  "total_output_tokens": 12000,
-  "sessions": [
+  "total_output_tokens": 120000,
+  "repositories": [
     {
-      "session_id": "uuid-...",
-      "project": "C--Users-ryuhe-projects-myapp",
-      "start_time": "2026-03-28T08:12:00.000Z",
-      "end_time": "2026-03-28T09:45:00.000Z",
-      "first_user_message": "ログイン機能のバグを修正してほしい",
-      "total_input_tokens": 15000,
-      "total_output_tokens": 4000,
-      "tools_used": ["Bash", "Edit", "Read"],
-      "turn_count": 12
+      "project": "myapp",
+      "total_sessions": 4,
+      "total_input_tokens": 20000,
+      "total_output_tokens": 60000,
+      "start_time": "2026-03-29T08:12:00.000Z",
+      "end_time": "2026-03-29T10:30:00.000Z",
+      "git_branches": ["main", "feature/login"],
+      "message_count": 48,
+      "turn_count": 24,
+      "tools_used": {"Bash": 12, "Read": 8, "Edit": 5, "Agent": 2},
+      "files_accessed": [
+        "/home/user/myapp/src/auth.ts",
+        "/home/user/myapp/src/login.vue"
+      ],
+      "sessions": [
+        {
+          "session_id": "uuid-...",
+          "project": "myapp",
+          "git_branch": "main",
+          "start_time": "2026-03-29T08:12:00.000Z",
+          "end_time": "2026-03-29T09:45:00.000Z",
+          "user_prompts": [
+            "ログイン機能のバグを修正してほしい",
+            "テストも追加して"
+          ],
+          "assistant_responses": [
+            "ログイン処理のバグを特定しました。auth.ts の42行目で...",
+            "テストを追加しました。以下の3ケースをカバーしています..."
+          ],
+          "total_input_tokens": 15000,
+          "total_output_tokens": 40000,
+          "message_count": 24,
+          "turn_count": 12,
+          "tools_used": {"Bash": 5, "Read": 4, "Edit": 3},
+          "files_accessed": [
+            "/home/user/myapp/src/auth.ts"
+          ]
+        }
+      ]
     }
   ]
 }
@@ -26,25 +57,52 @@
 
 ### フィールド解説
 
+#### DailyOutput（トップレベル）
+
 | フィールド | 説明 |
 |---|---|
 | `date` | 対象日（UTC） |
-| `total_sessions` | 当日のセッション数 |
+| `total_repositories` | 当日に作業したGitリポジトリ数 |
+| `total_sessions` | 全リポジトリのセッション数合計 |
 | `total_input_tokens` | 全セッションの入力トークン合計 |
 | `total_output_tokens` | 全セッションの出力トークン合計 |
-| `project` | `~/.claude/projects/` 以下のフォルダ名（パスのスラッシュを`--`に変換したもの） |
-| `first_user_message` | そのセッションの最初のユーザーメッセージ（最大200文字） |
-| `tools_used` | 使用したツール名リスト |
-| `turn_count` | ユーザーのターン数（会話の往復回数） |
+
+#### RepositorySummary
+
+| フィールド | 説明 |
+|---|---|
+| `project` | Gitルートディレクトリ名（`git rev-parse --show-toplevel` の basename） |
+| `total_sessions` | このリポジトリのセッション数 |
+| `git_branches` | 使用したブランチ一覧（重複排除・ソート済み） |
+| `message_count` | user + assistant メッセージ数合計 |
+| `turn_count` | ユーザーのターン数合計 |
+| `tools_used` | ツール名→使用回数のマップ（全セッション集計） |
+| `files_accessed` | 操作したファイル・ディレクトリ一覧（重複排除・ソート済み） |
+
+#### SessionSummary
+
+| フィールド | 説明 |
+|---|---|
+| `session_id` | セッションの一意識別子 |
+| `project` | リポジトリ名 |
+| `git_branch` | セッション開始時のGitブランチ |
+| `start_time` / `end_time` | セッションの開始・終了時刻（UTC） |
+| `user_prompts` | ユーザーが入力した全プロンプト（各200文字上限） |
+| `assistant_responses` | Claudeの出力テキスト（各300文字上限） |
+| `total_input_tokens` | このセッションの入力トークン数 |
+| `total_output_tokens` | このセッションの出力トークン数 |
+| `message_count` | user + assistant メッセージ数 |
+| `turn_count` | ユーザーのターン数 |
+| `tools_used` | ツール名→使用回数のマップ |
+| `files_accessed` | 操作したファイル一覧（Read/Write/Edit/Glob/Grep から抽出） |
 
 ### プロジェクト名の解読
 
-`project` フィールドはパスをエンコードしたもの。例：
-- `C--Users-ryuhe` → ホームディレクトリ（ルート作業）
-- `C--Users-ryuhe-projects-myapp` → `~/projects/myapp`
-- `C--Users-ryuhe-OneDrive--------zettelkasten` → OneDrive内のzettelkastenフォルダ
+`project` フィールドは `git rev-parse --show-toplevel` の出力の basename から取得します。例：
+- `/home/ryuhei/asunaro-marketplace` → `asunaro-marketplace`
+- Gitリポジトリでない場合は作業ディレクトリ（`cwd`）の basename
 
-表示時は末尾のフォルダ名を使って「myappプロジェクト」のように読みやすくする。
+git worktree で作業した場合も、同一リポジトリのルートにまとめられます。
 
 ### ツール名から作業内容を推定
 
@@ -57,34 +115,38 @@
 | `Agent` | 複雑な自律タスク |
 | `mcp__*` | 外部サービス連携 |
 
-## 日報テンプレート
+## Daily/への書き込みフォーマット
+
+`~/zettelkasten/Daily/YYYY-MM-DD.md` の `# ふりかえり` セクションに書き込む内容：
 
 ```markdown
-# 日報 YYYY年MM月DD日（曜日）
+# ふりかえり
 
-## サマリー
-（1〜2文で今日全体の作業を要約）
+## Claude Code作業ログ
+- **[プロジェクト名]**: [ユーザープロンプトとツール使用から読み取れる作業内容を事実として列挙]
+- **[プロジェクト名]**: ...
 
-## セッション別作業内容
+## [振り返り軸タイトル]
 
-### 1. [セッションのテーマ]（プロジェクト名）
-- **時間帯**: HH:MM〜HH:MM（JST換算）
-- **作業内容**: （first_user_message と tools_used から推定）
-- **トークン使用**: 入力 X,XXX / 出力 X,XXX
+**Q: [問い]**
+[ユーザーの回答。要約・言い換えをしない。フォローアップがあった場合は改行して続ける]
 
-### 2. ...
+**Q: [問い]**
+[ユーザーの回答]
 
-## 本日の統計
-- セッション数: N 件
-- 総トークン使用: 入力 XX,XXX / 出力 XX,XXX
-- 主な作業カテゴリ: （コーディング / 調査 / 設計 など）
-
-## 所感・メモ
-（作業の振り返りや気づきがあれば）
+...
 ```
+
+### 書き込み仕様
+
+- `# ふりかえり` 以降をすべて置き換える
+- `# メモ` セクションは変更しない
+- ユーザーの回答は語尾・言い回し含めてそのまま記録する（要約・整形禁止）
+- Claude Code作業ログは「〜しました」などの評価を加えず事実のみ記述する
 
 ## 注意事項
 
 - タイムスタンプはUTC。日本時間（JST）に変換するには+9時間する
-- `first_user_message` が空の場合は「内容不明」と記載
-- セッションが多い場合（5件以上）は類似テーマをグループ化してよい
+- `user_prompts` が空の場合はそのセッションをスキップ
+- リポジトリが多い場合（5件以上）は類似テーマをグループ化してよい
+- 機密情報（APIキー、パスワードなど）と思われる内容は含めない
