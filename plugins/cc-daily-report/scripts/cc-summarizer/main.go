@@ -1,290 +1,17 @@
 package main
 
 import (
-	"bufio"
+	"cc-summarizer/domain"
+	"cc-summarizer/infra"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 )
-
-// --- Raw JSONL structs ---
-
-type RawEntry struct {
-	Type      string          `json:"type"`
-	SessionID string          `json:"sessionId"`
-	Timestamp string          `json:"timestamp"`
-	CWD       string          `json:"cwd"`
-	Message   json.RawMessage `json:"message"`
-}
-
-type ContentBlock struct {
-	Type  string          `json:"type"`
-	Name  string          `json:"name,omitempty"`
-	Text  string          `json:"text,omitempty"`
-	Input json.RawMessage `json:"input,omitempty"`
-}
-
-type AssistantMsg struct {
-	Usage struct {
-		InputTokens  int `json:"input_tokens"`
-		OutputTokens int `json:"output_tokens"`
-	} `json:"usage"`
-	Content []ContentBlock `json:"content"`
-}
-
-// --- Output structs ---
-
-type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type SessionSummary struct {
-	SessionID         string         `json:"session_id"`
-	Project           string         `json:"project"`
-	CWD               string         `json:"-"`
-	GitBranch         string         `json:"git_branch,omitempty"`
-	StartTime         string         `json:"start_time"`
-	EndTime           string         `json:"end_time"`
-	Conversation      []Message      `json:"conversation"`
-	TotalInputTokens  int            `json:"total_input_tokens"`
-	TotalOutputTokens int            `json:"total_output_tokens"`
-	ToolsUsed         map[string]int `json:"tools_used"`
-	FilesAccessed     []string       `json:"files_accessed"`
-}
-
-type RepositorySummary struct {
-	Project           string           `json:"project"`
-	TotalSessions     int              `json:"total_sessions"`
-	TotalInputTokens  int              `json:"total_input_tokens"`
-	TotalOutputTokens int              `json:"total_output_tokens"`
-	StartTime         string           `json:"start_time"`
-	EndTime           string           `json:"end_time"`
-	GitBranches       []string         `json:"git_branches"`
-	ToolsUsed         map[string]int   `json:"tools_used"`
-	FilesAccessed     []string         `json:"files_accessed"`
-	Sessions          []SessionSummary `json:"sessions"`
-}
-
-type DailyOutput struct {
-	Date              string              `json:"date"`
-	TotalRepositories int                 `json:"total_repositories"`
-	TotalSessions     int                 `json:"total_sessions"`
-	TotalInputTokens  int                 `json:"total_input_tokens"`
-	TotalOutputTokens int                 `json:"total_output_tokens"`
-	Repositories      []RepositorySummary `json:"repositories"`
-}
-
-func homeDir() string {
-	if runtime.GOOS == "windows" {
-		return os.Getenv("USERPROFILE")
-	}
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return os.Getenv("HOME")
-	}
-	return home
-}
-
-func projectNameFromCWD(cwd string) string {
-	if cwd == "" {
-		return "unknown"
-	}
-	return filepath.Base(cwd)
-}
-
-func gitBranchFromCWD(cwd string) string {
-	if cwd == "" {
-		return ""
-	}
-	data, err := os.ReadFile(filepath.Join(cwd, ".git", "HEAD"))
-	if err != nil {
-		return ""
-	}
-	line := strings.TrimSpace(string(data))
-	if strings.HasPrefix(line, "ref: refs/heads/") {
-		return strings.TrimPrefix(line, "ref: refs/heads/")
-	}
-	if len(line) >= 7 {
-		return line[:7]
-	}
-	return line
-}
-
-// isSystemMessage returns true for auto-generated messages that should be excluded
-// from the conversation history (slash command output, warmup, etc.).
-func isSystemMessage(text string) bool {
-	if text == "" || text == "Warmup" {
-		return true
-	}
-	for _, prefix := range []string{
-		"<local-command-caveat>",
-		"<command-name>",
-		"<local-command-stdout>",
-		"<command-message>",
-	} {
-		if strings.HasPrefix(text, prefix) {
-			return true
-		}
-	}
-	return false
-}
-
-func extractUserText(msg json.RawMessage) string {
-	var s string
-	if json.Unmarshal(msg, &s) == nil {
-		return s
-	}
-	var obj struct {
-		Content interface{} `json:"content"`
-	}
-	if json.Unmarshal(msg, &obj) != nil {
-		return ""
-	}
-	switch v := obj.Content.(type) {
-	case string:
-		return v
-	case []interface{}:
-		var parts []string
-		for _, item := range v {
-			m, ok := item.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			if m["type"] == "text" {
-				if text, ok := m["text"].(string); ok && text != "" {
-					parts = append(parts, text)
-				}
-			}
-		}
-		return strings.Join(parts, "\n")
-	}
-	return ""
-}
-
-func extractFilesFromInput(toolName string, input json.RawMessage) []string {
-	var m map[string]interface{}
-	if json.Unmarshal(input, &m) != nil {
-		return nil
-	}
-	var paths []string
-	switch toolName {
-	case "Read", "Edit", "Write":
-		if v, ok := m["file_path"].(string); ok && v != "" {
-			paths = append(paths, v)
-		}
-	case "Grep", "Glob":
-		if v, ok := m["path"].(string); ok && v != "" {
-			paths = append(paths, v)
-		}
-	}
-	return paths
-}
-
-func parseSession(path, targetDate string) (*SessionSummary, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	var s SessionSummary
-	s.ToolsUsed = make(map[string]int)
-	fileSet := make(map[string]bool)
-
-	scanner := bufio.NewScanner(f)
-	scanner.Buffer(make([]byte, 10*1024*1024), 10*1024*1024)
-
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
-		}
-		var entry RawEntry
-		if err := json.Unmarshal([]byte(line), &entry); err != nil {
-			continue
-		}
-		if entry.Type == "file-history-snapshot" || entry.Timestamp == "" {
-			continue
-		}
-		if len(entry.Timestamp) >= 10 && entry.Timestamp[:10] != targetDate {
-			continue
-		}
-
-		if s.SessionID == "" {
-			s.SessionID = entry.SessionID
-		}
-		if s.CWD == "" && entry.CWD != "" {
-			s.CWD = entry.CWD
-		}
-		if s.StartTime == "" {
-			s.StartTime = entry.Timestamp
-		}
-		s.EndTime = entry.Timestamp
-
-		switch entry.Type {
-		case "user":
-			text := extractUserText(entry.Message)
-			if !isSystemMessage(text) {
-				s.Conversation = append(s.Conversation, Message{Role: "user", Content: text})
-			}
-
-		case "assistant":
-			var msg AssistantMsg
-			if err := json.Unmarshal(entry.Message, &msg); err != nil {
-				continue
-			}
-			s.TotalInputTokens += msg.Usage.InputTokens
-			s.TotalOutputTokens += msg.Usage.OutputTokens
-
-			var textParts []string
-			for _, b := range msg.Content {
-				switch b.Type {
-				case "text":
-					if b.Text != "" {
-						textParts = append(textParts, b.Text)
-					}
-				case "tool_use":
-					if b.Name != "" {
-						s.ToolsUsed[b.Name]++
-						for _, fp := range extractFilesFromInput(b.Name, b.Input) {
-							fileSet[fp] = true
-						}
-					}
-				}
-			}
-			if len(textParts) > 0 {
-				s.Conversation = append(s.Conversation, Message{
-					Role:    "assistant",
-					Content: strings.Join(textParts, "\n"),
-				})
-			}
-		}
-	}
-
-	if s.SessionID == "" || len(s.Conversation) == 0 {
-		return nil, nil
-	}
-
-	s.Project = projectNameFromCWD(s.CWD)
-	s.GitBranch = gitBranchFromCWD(s.CWD)
-
-	for fp := range fileSet {
-		s.FilesAccessed = append(s.FilesAccessed, fp)
-	}
-	sort.Strings(s.FilesAccessed)
-	if s.FilesAccessed == nil {
-		s.FilesAccessed = []string{}
-	}
-
-	return &s, nil
-}
 
 func main() {
 	targetDate := time.Now().UTC().Format("2006-01-02")
@@ -292,7 +19,7 @@ func main() {
 		targetDate = os.Args[1]
 	}
 
-	claudeProjects := filepath.Join(homeDir(), ".claude", "projects")
+	claudeProjects := filepath.Join(infra.HomeDir(), ".claude", "projects")
 
 	projectDirs, err := os.ReadDir(claudeProjects)
 	if err != nil {
@@ -321,14 +48,14 @@ func main() {
 	var (
 		mu       sync.Mutex
 		wg       sync.WaitGroup
-		sessions []SessionSummary
+		sessions []domain.SessionSummary
 	)
 
 	for _, p := range paths {
 		wg.Add(1)
 		go func(p string) {
 			defer wg.Done()
-			s, err := parseSession(p, targetDate)
+			s, err := infra.ReadSession(p, targetDate)
 			if err != nil || s == nil {
 				return
 			}
@@ -339,21 +66,58 @@ func main() {
 	}
 	wg.Wait()
 
+	// Fetch PR info for all unique cwd+branch combos in parallel
+	type cwdBranch struct{ cwd, branch string }
+	keySet := make(map[cwdBranch]bool)
+	for i := range sessions {
+		s := &sessions[i]
+		if s.CWD != "" && s.GitBranch != "" {
+			keySet[cwdBranch{s.CWD, s.GitBranch}] = true
+		}
+	}
+	var prMu sync.Mutex
+	var prWg sync.WaitGroup
+	prCache := make(map[string]*domain.PRInfo)
+	for k := range keySet {
+		prWg.Add(1)
+		go func(k cwdBranch) {
+			defer prWg.Done()
+			info := infra.FetchPRInfo(k.cwd, k.branch)
+			prMu.Lock()
+			prCache[k.cwd+"|"+k.branch] = info
+			prMu.Unlock()
+		}(k)
+	}
+	prWg.Wait()
+	for i := range sessions {
+		s := &sessions[i]
+		if s.CWD != "" && s.GitBranch != "" {
+			s.PRInfo = prCache[s.CWD+"|"+s.GitBranch]
+		}
+	}
+
 	sort.Slice(sessions, func(i, k int) bool {
 		return sessions[i].StartTime < sessions[k].StartTime
 	})
 
 	// Group sessions by project name
-	repoMap := make(map[string]*RepositorySummary)
+	repoMap := make(map[string]*domain.RepositorySummary)
+	repoFileSets := make(map[string]map[string]bool)
+	repoBranchSets := make(map[string]map[string]bool)
+	repoPRTimeMaps := make(map[string]map[int]*domain.PRTimeSummary)
+	repoPROrders := make(map[string][]int)
 	var repoOrder []string
 
 	for _, s := range sessions {
 		key := s.Project
 		if _, exists := repoMap[key]; !exists {
-			repoMap[key] = &RepositorySummary{
+			repoMap[key] = &domain.RepositorySummary{
 				Project:   key,
 				ToolsUsed: make(map[string]int),
 			}
+			repoFileSets[key] = make(map[string]bool)
+			repoBranchSets[key] = make(map[string]bool)
+			repoPRTimeMaps[key] = make(map[int]*domain.PRTimeSummary)
 			repoOrder = append(repoOrder, key)
 		}
 		r := repoMap[key]
@@ -366,39 +130,42 @@ func main() {
 		if s.EndTime > r.EndTime {
 			r.EndTime = s.EndTime
 		}
-		if s.GitBranch != "" {
-			found := false
-			for _, b := range r.GitBranches {
-				if b == s.GitBranch {
-					found = true
-					break
-				}
-			}
-			if !found {
-				r.GitBranches = append(r.GitBranches, s.GitBranch)
-			}
+		if s.GitBranch != "" && !repoBranchSets[key][s.GitBranch] {
+			repoBranchSets[key][s.GitBranch] = true
+			r.GitBranches = append(r.GitBranches, s.GitBranch)
 		}
 		for tool, count := range s.ToolsUsed {
 			r.ToolsUsed[tool] += count
 		}
-		fileSet := make(map[string]bool)
-		for _, fp := range r.FilesAccessed {
-			fileSet[fp] = true
-		}
 		for _, fp := range s.FilesAccessed {
-			fileSet[fp] = true
+			repoFileSets[key][fp] = true
 		}
-		r.FilesAccessed = nil
-		for fp := range fileSet {
-			r.FilesAccessed = append(r.FilesAccessed, fp)
+		if s.PRInfo != nil {
+			pr := s.PRInfo
+			if _, exists := repoPRTimeMaps[key][pr.Number]; !exists {
+				repoPRTimeMaps[key][pr.Number] = &domain.PRTimeSummary{
+					PRNumber:  pr.Number,
+					PRTitle:   pr.Title,
+					PRURL:     pr.URL,
+					NotionURL: pr.NotionURL,
+				}
+				repoPROrders[key] = append(repoPROrders[key], pr.Number)
+			}
+			repoPRTimeMaps[key][pr.Number].TotalHours += s.DurationMinutes / 60.0
 		}
-		sort.Strings(r.FilesAccessed)
 		r.Sessions = append(r.Sessions, s)
 	}
 
-	var repos []RepositorySummary
+	var repos []domain.RepositorySummary
 	for _, key := range repoOrder {
 		r := repoMap[key]
+		for fp := range repoFileSets[key] {
+			r.FilesAccessed = append(r.FilesAccessed, fp)
+		}
+		sort.Strings(r.FilesAccessed)
+		for _, num := range repoPROrders[key] {
+			r.PRTimeSummary = append(r.PRTimeSummary, *repoPRTimeMaps[key][num])
+		}
 		if r.GitBranches == nil {
 			r.GitBranches = []string{}
 		}
@@ -408,10 +175,10 @@ func main() {
 		repos = append(repos, *r)
 	}
 	if repos == nil {
-		repos = []RepositorySummary{}
+		repos = []domain.RepositorySummary{}
 	}
 
-	out := DailyOutput{
+	out := domain.DailyOutput{
 		Date:              targetDate,
 		TotalRepositories: len(repos),
 		TotalSessions:     len(sessions),

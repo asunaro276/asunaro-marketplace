@@ -78,6 +78,7 @@
 | `turn_count` | ユーザーのターン数合計 |
 | `tools_used` | ツール名→使用回数のマップ（全セッション集計） |
 | `files_accessed` | 操作したファイル・ディレクトリ一覧（重複排除・ソート済み） |
+| `pr_time_summary` | PR別工数集計。`{pr_number, pr_title, pr_url, notion_url, total_hours}` の配列。`gh` CLI未インストール時は空配列 |
 
 #### SessionSummary
 
@@ -87,6 +88,8 @@
 | `project` | リポジトリ名 |
 | `git_branch` | セッション開始時のGitブランチ |
 | `start_time` / `end_time` | セッションの開始・終了時刻（UTC） |
+| `duration_minutes` | セッションの所要時間（分）。start_time〜end_time の差分 |
+| `pr_info` | 紐づくPR情報。`{number, title, url, notion_url}`。PRなし・main/masterブランチは null |
 | `user_prompts` | ユーザーが入力した全プロンプト（各200文字上限） |
 | `assistant_responses` | Claudeの出力テキスト（各300文字上限） |
 | `total_input_tokens` | このセッションの入力トークン数 |
