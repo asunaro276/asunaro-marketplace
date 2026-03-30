@@ -94,6 +94,7 @@ func main() {
 		if s.CWD != "" && s.GitBranch != "" {
 			s.PRInfo = prCache[s.CWD+"|"+s.GitBranch]
 		}
+		s.ClassifyWorkImportance()
 	}
 
 	sort.Slice(sessions, func(i, k int) bool {
