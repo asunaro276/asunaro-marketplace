@@ -1,5 +1,5 @@
 ---
-name: cc-daily-report:cc-kosu
+name: daily:kosu
 description: このスキルは「工数を出して」「PR工数確認」「今日の工数」「工数サマリー」「作業時間を出して」などのリクエストで使用します。cc-summarizerスクリプトでセッション履歴を解析し、PRごとの工数サマリーを表形式で表示します。
 ---
 
@@ -30,7 +30,7 @@ cd "${CLAUDE_PLUGIN_ROOT}/scripts/cc-summarizer" && go build -o cc-summarizer ./
 "${CLAUDE_PLUGIN_ROOT}/scripts/cc-summarizer/cc-summarizer" 2026-03-29
 ```
 
-出力はJSON（`daily-report/references/report-format.md` 参照）。
+出力はJSON（`report/references/report-format.md` 参照）。
 
 ### ステップ3：PR工数サマリーの表示
 

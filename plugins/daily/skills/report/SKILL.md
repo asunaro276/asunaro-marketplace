@@ -1,5 +1,5 @@
 ---
-name: cc-daily-report:daily-report
+name: daily:report
 description: このスキルは「日報を作って」「今日のClaude Code利用状況をまとめて」「デイリーレポート生成」「日報生成」「今日の作業まとめ」などのリクエストで使用します。cc-summarizerスクリプトでセッション履歴を並列解析し、インタラクティブな振り返りQ&Aを経てZettelkastenのDailyノートに書き込みます。
 ---
 

@@ -1,5 +1,5 @@
 {
-  "name": "cc-daily-report",
+  "name": "daily",
   "version": "0.1.0",
   "description": "Claude Codeの利用履歴を解析し、毎日の日報を自動生成するプラグイン",
   "author": {

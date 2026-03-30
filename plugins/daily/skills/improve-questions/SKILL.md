@@ -1,5 +1,5 @@
 ---
-name: cc-daily-report:improve-questions
+name: daily:improve-questions
 description: このスキルは「日報の問いを改善したい」「振り返りの問いをこういう方向にしてほしい」「question-typesを変えたい」「問いの設計を見直したい」などのリクエストで使用します。現在の問い一覧を提示し、ユーザーのフィードバックをもとに新しい問いの形式を提案してquestion-types.mdを更新します。
 ---
 
@@ -15,7 +15,7 @@ description: このスキルは「日報の問いを改善したい」「振り�
 
 ### ステップ1：現在の問い一覧を表示
 
-`${CLAUDE_PLUGIN_ROOT}/skills/daily-report/references/question-types.md` を読み込み、
+`${CLAUDE_PLUGIN_ROOT}/skills/report/references/question-types.md` を読み込み、
 6カテゴリと各カテゴリの ①目的を問う／②妥当性を問う を整理して表示する。
 
 表示後、以下を問いかける：
@@ -79,7 +79,7 @@ description: このスキルは「日報の問いを改善したい」「振り�
 ② 変更後: その制約を踏まえて、今の〇〇という実装をどう評価しますか？
 ```
 
-3. ファイルを書き込む（`${CLAUDE_PLUGIN_ROOT}/skills/daily-report/references/question-types.md`）
+3. ファイルを書き込む（`${CLAUDE_PLUGIN_ROOT}/skills/report/references/question-types.md`）
 4. 「次回の日報から反映されます」と伝えて完了
 
 ## NG パターン
