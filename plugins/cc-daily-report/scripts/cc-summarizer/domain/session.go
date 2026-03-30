@@ -2,14 +2,32 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 )
 
 // Message は会話の 1 ターンを表す出力用の構造体。
 type Message struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role       string `json:"role"`
+	Content    string `json:"content"`
+	IsDecision bool   `json:"is_decision"`
+}
+
+var decisionKeywords = []string{
+	"にする", "を選ぶ", "の方がいい", "ではなく", "より",
+	"じゃなくて", "そうじゃなくて", "いや、", "やっぱり",
+	"を使う", "に変える", "にして", "に変更", "のほうが", "一旦",
+}
+
+func isDecisionPrompt(text string) bool {
+	for _, kw := range decisionKeywords {
+		if strings.Contains(text, kw) {
+			return true
+		}
+	}
+	return false
 }
 
 // SessionSummary は 1 セッション分の解析結果を表す。
@@ -52,7 +70,12 @@ func NewSession(entries []RawEntry) *SessionSummary {
 		switch entry.Type {
 		case "user":
 			if !entry.IsSystemMessage() {
-				s.Conversation = append(s.Conversation, Message{Role: "user", Content: entry.UserText()})
+				text := entry.UserText()
+				s.Conversation = append(s.Conversation, Message{
+					Role:       "user",
+					Content:    text,
+					IsDecision: isDecisionPrompt(text),
+				})
 			}
 
 		case "assistant":
@@ -68,7 +91,14 @@ func NewSession(entries []RawEntry) *SessionSummary {
 				switch b.Type {
 				case "text":
 					if b.Text != "" {
-						textParts = append(textParts, b.Text)
+						if strings.HasPrefix(b.Text, "Base directory for this skill:") {
+							lines := strings.SplitN(b.Text, "\n", 2)
+							skillPath := strings.TrimPrefix(lines[0], "Base directory for this skill: ")
+							skillName := filepath.Base(filepath.Dir(skillPath))
+							textParts = append(textParts, fmt.Sprintf("[skill: %sを使用]", skillName))
+						} else {
+							textParts = append(textParts, b.Text)
+						}
 					}
 				case "tool_use":
 					if b.Name != "" {

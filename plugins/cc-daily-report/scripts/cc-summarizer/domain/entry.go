@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -24,7 +25,7 @@ func (e *RawEntry) IsForDate(date string) bool {
 func (e *RawEntry) UserText() string {
 	var s string
 	if json.Unmarshal(e.Message, &s) == nil {
-		return s
+		return summarizeSkillContent(s)
 	}
 	var obj struct {
 		Content interface{} `json:"content"`
@@ -34,7 +35,7 @@ func (e *RawEntry) UserText() string {
 	}
 	switch v := obj.Content.(type) {
 	case string:
-		return v
+		return summarizeSkillContent(v)
 	case []interface{}:
 		var parts []string
 		for _, item := range v {
@@ -44,13 +45,24 @@ func (e *RawEntry) UserText() string {
 			}
 			if m["type"] == "text" {
 				if text, ok := m["text"].(string); ok && text != "" {
-					parts = append(parts, text)
+					parts = append(parts, summarizeSkillContent(text))
 				}
 			}
 		}
 		return strings.Join(parts, "\n")
 	}
 	return ""
+}
+
+// summarizeSkillContent は "Base directory for this skill" で始まる内容を短縮する。
+func summarizeSkillContent(text string) string {
+	if strings.HasPrefix(text, "Base directory for this skill:") {
+		lines := strings.SplitN(text, "\n", 2)
+		skillPath := strings.TrimPrefix(lines[0], "Base directory for this skill: ")
+		skillName := filepath.Base(skillPath)
+		return fmt.Sprintf("[skill: %sを使用]", skillName)
+	}
+	return text
 }
 
 // IsSystemMessage は、このユーザーエントリが自動生成メッセージ（スラッシュコマンド出力・Warmup 等）

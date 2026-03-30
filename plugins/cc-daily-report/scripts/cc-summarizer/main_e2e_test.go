@@ -437,7 +437,97 @@ func TestFileHistorySnapshotIgnored(t *testing.T) {
 	}
 }
 
-// UC10: recommended_question_count がセッション数に基づいて正しく計算される。
+// UC10: is_decision フラグが意思決定キーワードを含むユーザーメッセージに対して正しく設定される。
+func TestIsDecisionFlag(t *testing.T) {
+	tests := []struct {
+		name               string
+		userMessage        string
+		expectedIsDecision bool
+	}{
+		{"にする - decision", "A案にする", true},
+		{"を選ぶ - decision", "このオプションを選ぶ", true},
+		{"の方がいい - decision", "Bの方がいいと思う", true},
+		{"ではなく - decision", "AではなくBを使う", true},
+		{"より - decision", "XよりYが良い", true},
+		{"じゃなくて - decision", "これじゃなくてあっちにして", true},
+		{"そうじゃなくて - decision", "そうじゃなくてこっち", true},
+		{"いや、 - decision", "いや、やっぱりやめる", true},
+		{"やっぱり - decision", "やっぱり元のままにする", true},
+		{"を使う - decision", "Reactを使うことにする", true},
+		{"に変える - decision", "実装をAに変える", true},
+		{"にして - decision", "このファイルにして", true},
+		{"に変更 - decision", "設定をBに変更", true},
+		{"のほうが - decision", "こっちのほうがいい", true},
+		{"一旦 - decision", "一旦保留にする", true},
+		{"no decision keyword", "このファイルを読んでください", false},
+		{"normal question", "どうすればいいですか？", false},
+		{"multiple keywords", "やっぱりAじゃなくてBにする", true},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			bin := buildBinary(t)
+			projectsDir := makeProjectsDir(t)
+
+			date := "2024-06-15"
+			cwd := "/home/user/myapp"
+			sessionID := "sess-decision"
+
+			writeJSONL(t, projectsDir, "-home-user-myapp", sessionID, date, []string{
+				userEntry(sessionID, cwd, date+"T10:00:00Z", tc.userMessage),
+				assistantEntry(sessionID, cwd, date+"T10:01:00Z", 10, 5, "reply"),
+			})
+
+			result := run(t, bin, date)
+
+			if result.TotalSessions != 1 {
+				t.Fatalf("expected 1 session, got %d", result.TotalSessions)
+			}
+			sess := result.Repositories[0].Sessions[0]
+			if len(sess.Conversation) < 1 {
+				t.Fatal("no conversation found")
+			}
+			userMsg := sess.Conversation[0]
+			if userMsg.Role != "user" {
+				t.Fatalf("first message role: got %q, want user", userMsg.Role)
+			}
+			if userMsg.IsDecision != tc.expectedIsDecision {
+				t.Errorf("is_decision: got %v, want %v (message: %q)", userMsg.IsDecision, tc.expectedIsDecision, tc.userMessage)
+			}
+		})
+	}
+}
+
+// UC11: assistantメッセージのis_decisionは常にfalseになる。
+func TestAssistantIsDecisionAlwaysFalse(t *testing.T) {
+	bin := buildBinary(t)
+	projectsDir := makeProjectsDir(t)
+
+	date := "2024-06-15"
+	cwd := "/home/user/myapp"
+	sessionID := "sess-assistant"
+
+	writeJSONL(t, projectsDir, "-home-user-myapp", sessionID, date, []string{
+		userEntry(sessionID, cwd, date+"T10:00:00Z", "やっぱりAにする"),
+		assistantEntry(sessionID, cwd, date+"T10:01:00Z", 10, 5, "AではなくBにする"),
+	})
+
+	result := run(t, bin, date)
+
+	sess := result.Repositories[0].Sessions[0]
+	if len(sess.Conversation) < 2 {
+		t.Fatal("expected at least 2 messages")
+	}
+	assistantMsg := sess.Conversation[1]
+	if assistantMsg.Role != "assistant" {
+		t.Fatalf("second message role: got %q, want assistant", assistantMsg.Role)
+	}
+	if assistantMsg.IsDecision != false {
+		t.Errorf("assistant is_decision: got %v, want false", assistantMsg.IsDecision)
+	}
+}
+
+// UC12: recommended_question_count がセッション数に基づいて正しく計算される。
 func TestRecommendedQuestionCount(t *testing.T) {
 	tests := []struct {
 		name          string
