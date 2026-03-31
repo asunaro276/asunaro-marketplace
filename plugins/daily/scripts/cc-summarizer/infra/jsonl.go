@@ -47,7 +47,7 @@ func ReadSession(filePath, targetDate string) (*domain.SessionSummary, error) {
 	}
 
 	s.GitBranch = GitBranchFromCWD(s.CWD)
-	if (s.GitBranch == "main" || s.GitBranch == "master") && s.StartTime != "" {
+	if s.StartTime != "" {
 		if t, err := time.Parse(time.RFC3339Nano, s.StartTime); err == nil {
 			s.GitBranch = GetBranchAtTime(s.CWD, t, s.GitBranch)
 		}

@@ -12,7 +12,42 @@ func GitBranchFromCWD(cwd string) string {
 	if cwd == "" {
 		return ""
 	}
-	data, err := os.ReadFile(filepath.Join(cwd, ".git", "HEAD"))
+	// cwdから親ディレクトリを辿って .git を探す（サブディレクトリ・worktree対応）
+	dir := cwd
+	for {
+		gitPath := filepath.Join(dir, ".git")
+		info, err := os.Stat(gitPath)
+		if err == nil {
+			if info.IsDir() {
+				// 通常のgitリポジトリ
+				return readHeadFile(filepath.Join(gitPath, "HEAD"))
+			}
+			// git worktree: .git はファイルで "gitdir: /path/to/.git/worktrees/xxx" を含む
+			data, err := os.ReadFile(gitPath)
+			if err != nil {
+				return ""
+			}
+			line := strings.TrimSpace(string(data))
+			if !strings.HasPrefix(line, "gitdir: ") {
+				return ""
+			}
+			gitdir := strings.TrimPrefix(line, "gitdir: ")
+			if !filepath.IsAbs(gitdir) {
+				gitdir = filepath.Join(dir, gitdir)
+			}
+			return readHeadFile(filepath.Join(gitdir, "HEAD"))
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return ""
+}
+
+func readHeadFile(headPath string) string {
+	data, err := os.ReadFile(headPath)
 	if err != nil {
 		return ""
 	}
