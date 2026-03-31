@@ -28,13 +28,13 @@
       "source": "./plugins/frontend-plugin"
     },
     {
-      "name": "cc-daily-report",
+      "name": "daily",
       "description": "Claude Codeの利用履歴を解析し、毎日の日報を自動生成するプラグイン",
       "version": "0.1.0",
       "author": {
         "name": "nakano"
       },
-      "source": "./plugins/cc-daily-report"
+      "source": "./plugins/daily"
     },
     {
       "name": "pr-context-mcp",

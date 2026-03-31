@@ -18,7 +18,7 @@ func TestSummarizeSkillContent(t *testing.T) {
 		},
 		{
 			name:     "daily-report skill is summarized",
-			input:    "Base directory for this skill: /home/user/.claude/plugins/cc-daily-report/skills/daily-report\n\n# Claude Code 日報生成スキル\n\n## 概要...",
+			input:    "Base directory for this skill: /home/user/.claude/plugins/daily/skills/daily-report\n\n# Claude Code 日報生成スキル\n\n## 概要...",
 			expected: "[skill: daily-reportを使用]",
 		},
 		{
@@ -67,7 +67,7 @@ func TestUserTextWithSkillContent(t *testing.T) {
 }
 
 func TestUserTextWithArrayContentContainingSkill(t *testing.T) {
-	skillContent := "Base directory for this skill: /home/user/.claude/plugins/cc-daily-report/skills/daily-report\n\n# Daily Report..."
+	skillContent := "Base directory for this skill: /home/user/.claude/plugins/daily/skills/daily-report\n\n# Daily Report..."
 	content := []interface{}{
 		map[string]interface{}{
 			"type": "text",

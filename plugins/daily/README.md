@@ -1,4 +1,4 @@
-# cc-daily-report
+# daily
 
 Claude Codeの利用履歴を解析し、毎日の日報を自動生成するプラグイン。
 
