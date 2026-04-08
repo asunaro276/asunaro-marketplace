@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -90,6 +91,43 @@ func (e *RawEntry) IsSystemMessage() bool {
 func projectNameFromCWD(cwd string) string {
 	if cwd == "" {
 		return "unknown"
+	}
+	// cwdから親ディレクトリを辿って .git を探す
+	dir := cwd
+	for {
+		gitPath := filepath.Join(dir, ".git")
+		info, err := os.Stat(gitPath)
+		if err == nil {
+			if info.IsDir() {
+				// 通常のgitリポジトリ → そのディレクトリ名を返す
+				return filepath.Base(dir)
+			}
+			// git worktree: .git はファイルで "gitdir: /path/to/.git/worktrees/xxx" を含む
+			data, err := os.ReadFile(gitPath)
+			if err != nil {
+				return filepath.Base(dir)
+			}
+			line := strings.TrimSpace(string(data))
+			if !strings.HasPrefix(line, "gitdir: ") {
+				return filepath.Base(dir)
+			}
+			gitdir := strings.TrimPrefix(line, "gitdir: ")
+			if !filepath.IsAbs(gitdir) {
+				gitdir = filepath.Join(dir, gitdir)
+			}
+			// gitdir は "/path/to/repo/.git/worktrees/xxx" の形式
+			// ".git/worktrees" を含むなら、その2つ上が親リポジトリの .git
+			cleaned := filepath.Clean(gitdir)
+			if i := strings.Index(cleaned, string(filepath.Separator)+".git"+string(filepath.Separator)+"worktrees"+string(filepath.Separator)); i >= 0 {
+				return filepath.Base(cleaned[:i])
+			}
+			return filepath.Base(dir)
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
 	}
 	return filepath.Base(cwd)
 }
