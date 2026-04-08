@@ -14,16 +14,18 @@ type PRInfo struct {
 	Title     string `json:"title"`
 	URL       string `json:"url"`
 	NotionURL string `json:"notion_url,omitempty"`
+	Author    string `json:"author"`
 }
 
 // NewPRInfo は PR の各フィールドと本文から PRInfo を生成する。
 // Notion URL の抽出は内部で行う。
-func NewPRInfo(number int, title, url, body string) *PRInfo {
+func NewPRInfo(number int, title, url, body, author string) *PRInfo {
 	return &PRInfo{
 		Number:    number,
 		Title:     title,
 		URL:       url,
 		NotionURL: extractNotionURL(body),
+		Author:    author,
 	}
 }
 

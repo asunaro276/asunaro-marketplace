@@ -66,6 +66,9 @@ func main() {
 	}
 	wg.Wait()
 
+	// 現在の GitHub ユーザー名を取得（著者フィルタ用）
+	ghUser := infra.FetchGitHubUsername()
+
 	// Fetch PR info for all unique cwd+branch combos in parallel
 	type cwdBranch struct{ cwd, branch string }
 	keySet := make(map[cwdBranch]bool)
@@ -92,7 +95,12 @@ func main() {
 	for i := range sessions {
 		s := &sessions[i]
 		if s.CWD != "" && s.GitBranch != "" {
-			s.PRInfo = prCache[s.CWD+"|"+s.GitBranch]
+			prInfo := prCache[s.CWD+"|"+s.GitBranch]
+			// 自分が著者でないPRは除外（ghUser取得失敗時はフィルタなし）
+			if prInfo != nil && ghUser != "" && prInfo.Author != ghUser {
+				prInfo = nil
+			}
+			s.PRInfo = prInfo
 		}
 		s.ClassifyWorkImportance()
 	}
