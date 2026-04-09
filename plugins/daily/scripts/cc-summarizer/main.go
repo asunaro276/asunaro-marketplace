@@ -100,6 +100,18 @@ func main() {
 			if prInfo != nil && ghUser != "" && prInfo.Author != ghUser {
 				prInfo = nil
 			}
+			// フォールバック: ブランチからPRが見つからない場合、セッション中のコミットからPR逆引き
+			if prInfo == nil && s.StartTime != "" && s.EndTime != "" {
+				start, errS := time.Parse(time.RFC3339Nano, s.StartTime)
+				end, errE := time.Parse(time.RFC3339Nano, s.EndTime)
+				if errS == nil && errE == nil {
+					prInfo = infra.FetchPRInfoByCommits(s.CWD, start, end, ghUser)
+					// 著者フィルタ（ghUser取得失敗時はフィルタなし）
+					if prInfo != nil && ghUser != "" && prInfo.Author != ghUser {
+						prInfo = nil
+					}
+				}
+			}
 			s.PRInfo = prInfo
 		}
 		s.ClassifyWorkImportance()

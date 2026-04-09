@@ -61,23 +61,17 @@ func readHeadFile(headPath string) string {
 	return line
 }
 
-// GetBranchAtTime returns the git branch that was checked out at time t
-// by parsing git reflog checkout entries. Returns fallback if not determinable.
-func GetBranchAtTime(cwd string, t time.Time, fallback string) string {
-	cmd := exec.Command("git", "reflog", "--format=%ci %gs")
-	cmd.Dir = cwd
-	out, err := cmd.Output()
-	if err != nil {
-		return fallback
-	}
+// checkoutEvent はreflogのcheckoutイベントを表す。
+type checkoutEvent struct {
+	at   time.Time
+	from string
+	to   string
+}
 
-	type event struct {
-		at time.Time
-		to string
-	}
-	var events []event
-
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+// parseCheckoutEvents はgit reflog出力からcheckoutイベントを新しい順にパースする。
+func parseCheckoutEvents(reflogOutput string) []checkoutEvent {
+	var events []checkoutEvent
+	for _, line := range strings.Split(strings.TrimSpace(reflogOutput), "\n") {
 		if !strings.Contains(line, "checkout: moving from ") {
 			continue
 		}
@@ -95,15 +89,43 @@ func GetBranchAtTime(cwd string, t time.Time, fallback string) string {
 		if idx < 0 {
 			continue
 		}
+		// "checkout: moving from " の後から " to " の前までがfromブランチ
+		fromPart := rest[len("checkout: moving from "):idx]
+		fromBranch := strings.TrimSpace(fromPart)
 		toBranch := strings.TrimSpace(rest[idx+4:])
-		events = append(events, event{eventTime, toBranch})
+		events = append(events, checkoutEvent{eventTime, fromBranch, toBranch})
 	}
+	return events
+}
 
+// resolveBranchAtTime はcheckoutイベント列（新しい順）から時刻tでのブランチを判定する。
+func resolveBranchAtTime(events []checkoutEvent, t time.Time, fallback string) string {
 	// events are newest-first; find the latest event at or before t
 	for _, e := range events {
 		if !e.at.After(t) {
 			return e.to
 		}
 	}
+
+	// セッション開始時刻より前のcheckoutイベントがない場合、
+	// 最も古いcheckoutイベントの「from」ブランチを返す。
+	// 最古のcheckoutが「from A to B」なら、それ以前はブランチAだったはず。
+	if len(events) > 0 {
+		return events[len(events)-1].from
+	}
 	return fallback
+}
+
+// GetBranchAtTime returns the git branch that was checked out at time t
+// by parsing git reflog checkout entries. Returns fallback if not determinable.
+func GetBranchAtTime(cwd string, t time.Time, fallback string) string {
+	cmd := exec.Command("git", "reflog", "--format=%ci %gs")
+	cmd.Dir = cwd
+	out, err := cmd.Output()
+	if err != nil {
+		return fallback
+	}
+
+	events := parseCheckoutEvents(string(out))
+	return resolveBranchAtTime(events, t, fallback)
 }
